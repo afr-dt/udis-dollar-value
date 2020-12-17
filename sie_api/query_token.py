@@ -25,8 +25,13 @@ class QueryToken:
         }
 
     def query_to_banxico(self, start_date, end_date):
+        """ Fetch dollar value and Udis value
+
+        :param start_date: a date type 
+        :param end_date: a date type
+        """
         preffix = '/datos'
-        id_series = '/SF43718,SF60653,SP68257'
+        id_series = '/SP68257,SF43718'
         print(
             f'✅ {self.host}{self.end_point}{id_series}{preffix}/{start_date}/{end_date}'
         )
