@@ -30,3 +30,7 @@ Q_TOKEN='your_token'
 BASE_URL='url...'
 END_POINT='end_point...'
 ```
+
+### Home Screen
+
+![Screen](Screen.png)
