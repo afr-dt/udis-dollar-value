@@ -32,17 +32,12 @@ class QueryToken:
         """
         preffix = '/datos'
         id_series = '/SP68257,SF43718'
-        print(
-            f'✅ {self.host}{self.end_point}{id_series}{preffix}/{start_date}/{end_date}'
-        )
         try:
             response = requests.get(
                 f'{self.host}{self.end_point}{id_series}{preffix}/{start_date}/{end_date}',
                 headers=self.headers()
             )
-
         except requests.exceptions.RequestException as error:
-            # Remember response error with json()
             raise SystemExit(error.message)
 
         return response

@@ -1,0 +1,166 @@
+<!-- home.html -->
+{% extends "base.html" %} {% block content %} {% load static %}
+
+<form class="form-inline" id="q_udis_dollar">
+  <div class="form-group mx-sm-3 mb-2">
+    <input class="form-control" name="start_date" id="start_datepicker" placeholder="Fecha Inicial" autocomplete="off"
+      required />
+  </div>
+  <div class="form-group mx-sm-3 mb-2">
+    <input class="form-control" name="end_date" id="end_datepicker" placeholder="Fecha Final" autocomplete="off"
+      required />
+  </div>
+  <button type="submit" class="btn btn-success mx-sm-3 mb-2">
+    Consultar
+  </button>
+</form>
+
+<div id="root"></div>
+<script>
+  // No request future dates
+  let today = new Date();
+
+  $('#start_datepicker').datepicker({
+    format: 'dd/mm/yyyy',
+    uiLibrary: 'bootstrap4',
+    autoclose: true,
+    endDate: 'today',
+    maxDate: today,
+  });
+
+  $('#end_datepicker').datepicker({
+    format: 'dd/mm/yyyy',
+    uiLibrary: 'bootstrap4',
+    autoclose: true,
+    endDate: 'today',
+    maxDate: today,
+  });
+</script>
+<script>
+  function currencyFormat(params) {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+      minimumFractionDigits: 2,
+    }).format(params);
+  }
+  function changeDateFormat(date) {
+    return date.toString().split('/').reverse().join('/');
+  }
+
+  function dateFormat(date) {
+    return new Date(date).toLocaleDateString('es-MX', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).toLowerCase();
+  }
+
+  function series(values) {
+    return `
+      <ul class="list-group list-group-flush">
+      ${values
+        .map((item) => {
+          return ` 
+          <li class="list-group-item">
+            El ${dateFormat(changeDateFormat(item.fecha))}: ${currencyFormat(item.dato)} Pesos
+          </li>
+      `;
+        })
+        .join('')}
+      </ul>
+    `;
+  }
+
+  function average(arr) {
+    return arr.reduce((acc, el) => acc + el) / arr.length
+  }
+
+  function max(arr) {
+    return Math.max(...arr)
+  }
+
+  function min(arr) {
+    return Math.min(...arr)
+  }
+
+  function valuesArray(params) {
+    return params.datos.map(item => item.dato).map(Number)
+  }
+
+  function renderTemplate(params) {
+    console.log('Max', max(valuesArray(params)));
+
+    return `
+      <div class="col-sm-6">  
+        <div class="card bg-light border-light shadow mb-3">
+          <div class="card-header">
+            ${params.idSerie === 'SP68257' ? 'Unidades de Inversión' : 'Tipo de Cambio'}
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">
+              Promedio: ${currencyFormat(average(valuesArray(params)))}
+            </h5>
+            <h5 class="card-title">
+              Máximo: ${currencyFormat(max(valuesArray(params)))}
+            </h5>
+            <h5 class="card-title">
+              Mínimo: ${currencyFormat(min(valuesArray(params)))}
+            </h5>
+            <p class="card-text"></p>
+            ${series(params.datos)}
+          </div>    
+        </div>  
+      </div>  
+    `;
+  }
+
+  function render(data) {
+    // console.log(data);
+    if (data.status_code === 200) {
+      return (document.getElementById('root').innerHTML = `
+      <div class="row">
+        ${data.data.map(renderTemplate).join('')}
+      </div>
+    `);
+    }
+  }
+
+  const crf_token = ('; ' + document.cookie)
+    .split('; csrftoken=')
+    .pop()
+    .split(';')
+    .shift();
+
+  const udis_dollar_form = document.getElementById('q_udis_dollar');
+
+  udis_dollar_form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const start_date = document.getElementById('start_datepicker');
+    const end_date = document.getElementById('end_datepicker');
+    const formData = new FormData();
+
+    formData.append('start_date', start_date.value);
+    formData.append('end_date', end_date.value);
+
+    query_data = {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': crf_token,
+        Accept: 'application/json',
+      },
+      body: formData,
+    };
+    udis_dollar_form.reset();
+    fetch('query_udis_dollar', query_data)
+      .then((response) => response.json())
+      .then((data) => {
+        render(data);
+      })
+      .catch((error) => alert('Error al consultar, intente con otras fechas.'));
+  });
+</script>
+
+{% endblock content %}
+<script src="{% static 'js/main.js' %}"></script>

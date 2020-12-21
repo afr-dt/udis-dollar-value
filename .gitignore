@@ -239,6 +239,7 @@ Temporary Items
 # pytype static type analyzer
 
 # profiling data
+fake.json
 
 ### VisualStudioCode ###
 .vscode/*

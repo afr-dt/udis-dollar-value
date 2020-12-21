@@ -1,4 +1,4 @@
-## Get Udis and Dollars from Banxico token
+## Get Udis and Dollars from Banxico
 
 ### Prerequisites
 
