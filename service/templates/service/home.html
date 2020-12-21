@@ -1,6 +1,7 @@
 <!-- home.html -->
-{% extends "base.html" %} {% block content %} {% load static %}
-
+{% extends "base.html" %} {% block content %}
+{% load static %}
+<script type="text/javascript" src="{% static 'js/main.js' %}"></script>
 <form class="form-inline" id="q_udis_dollar">
   <div class="form-group mx-sm-3 mb-2">
     <input class="form-control" name="start_date" id="start_datepicker" placeholder="Fecha Inicial" autocomplete="off"
@@ -16,7 +17,21 @@
 </form>
 
 <div id="root"></div>
+
+<div class="row">
+  <div class="col-sm-6">
+    <canvas id="currencyChart" width="100" height="85"></canvas>
+  </div>
+  <div class="col-sm-6">
+    <canvas id="currencyChart2" width="100" height="85"></canvas>
+  </div>
+</div>
+
+
+
 <script>
+  let ctx = document.getElementById('currencyChart');
+  let ctx2 = document.getElementById('currencyChart2');
   // No request future dates
   let today = new Date();
 
@@ -35,103 +50,6 @@
     endDate: 'today',
     maxDate: today,
   });
-</script>
-<script>
-  function currencyFormat(params) {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      minimumFractionDigits: 2,
-    }).format(params);
-  }
-  function changeDateFormat(date) {
-    return date.toString().split('/').reverse().join('/');
-  }
-
-  function dateFormat(date) {
-    return new Date(date).toLocaleDateString('es-MX', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).toLowerCase();
-  }
-
-  function series(values) {
-    return `
-      <ul class="list-group list-group-flush">
-      ${values
-        .map((item) => {
-          return ` 
-          <li class="list-group-item">
-            El ${dateFormat(changeDateFormat(item.fecha))}: ${currencyFormat(item.dato)} Pesos
-          </li>
-      `;
-        })
-        .join('')}
-      </ul>
-    `;
-  }
-
-  function average(arr) {
-    return arr.reduce((acc, el) => acc + el) / arr.length
-  }
-
-  function max(arr) {
-    return Math.max(...arr)
-  }
-
-  function min(arr) {
-    return Math.min(...arr)
-  }
-
-  function valuesArray(params) {
-    return params.datos.map(item => item.dato).map(Number)
-  }
-
-  function renderTemplate(params) {
-    console.log('Max', max(valuesArray(params)));
-
-    return `
-      <div class="col-sm-6">  
-        <div class="card bg-light border-light shadow mb-3">
-          <div class="card-header">
-            ${params.idSerie === 'SP68257' ? 'Unidades de Inversión' : 'Tipo de Cambio'}
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">
-              Promedio: ${currencyFormat(average(valuesArray(params)))}
-            </h5>
-            <h5 class="card-title">
-              Máximo: ${currencyFormat(max(valuesArray(params)))}
-            </h5>
-            <h5 class="card-title">
-              Mínimo: ${currencyFormat(min(valuesArray(params)))}
-            </h5>
-            <p class="card-text"></p>
-            ${series(params.datos)}
-          </div>    
-        </div>  
-      </div>  
-    `;
-  }
-
-  function render(data) {
-    // console.log(data);
-    if (data.status_code === 200) {
-      return (document.getElementById('root').innerHTML = `
-      <div class="row">
-        ${data.data.map(renderTemplate).join('')}
-      </div>
-    `);
-    }
-  }
-
-  const crf_token = ('; ' + document.cookie)
-    .split('; csrftoken=')
-    .pop()
-    .split(';')
-    .shift();
 
   const udis_dollar_form = document.getElementById('q_udis_dollar');
 
@@ -147,7 +65,6 @@
     query_data = {
       method: 'POST',
       headers: {
-        'X-CSRFToken': crf_token,
         Accept: 'application/json',
       },
       body: formData,
@@ -156,11 +73,11 @@
     fetch('query_udis_dollar', query_data)
       .then((response) => response.json())
       .then((data) => {
-        render(data);
+        render(data)
+        chartFuncBar(data)
+        chartFuncBarT(data)
       })
       .catch((error) => alert('Error al consultar, intente con otras fechas.'));
   });
 </script>
-
 {% endblock content %}
-<script src="{% static 'js/main.js' %}"></script>
