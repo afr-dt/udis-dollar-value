@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 
-
 # Django
 from django.views import View
 from django.shortcuts import render

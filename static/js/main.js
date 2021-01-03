@@ -11,14 +11,16 @@ function changeDateFormat(date) {
 }
 
 function dateFormat(date) {
-  return new Date(date)
-    .toLocaleDateString('es-MX', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-    .toLowerCase();
+  return new Date(date).toLocaleDateString('es-MX', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function capitalizeFirstLetter(text) {
+  return text.replace(/(^.)/, (s) => s.toUpperCase());
 }
 
 function average(arr) {
@@ -40,20 +42,20 @@ function valuesArray(params) {
 function get_dates(params) {
   return params.map((item) => item.fecha);
 }
+
 function get_currency_values(currency_arr) {
   return currency_arr.map((item) => item.dato).map(Number);
 }
 
 function series(values) {
   return `
-      <ul class="list-group list-group-flush">
+      <ul class="list-group text-center list-group-flush">
       ${values
         .map((item) => {
           return ` 
           <li class="list-group-item">
-            El ${dateFormat(changeDateFormat(item.fecha))}: ${currencyFormat(
-            item.dato
-          )} Pesos
+            ${capitalizeFirstLetter(dateFormat(changeDateFormat(item.fecha)))}: 
+            <strong>${currencyFormat(item.dato)}</strong> Pesos
           </li>
       `;
         })
@@ -62,26 +64,29 @@ function series(values) {
     `;
 }
 
+function chartData(currencies) {
+  return currencies.data.map((item) => get_currency_values(item.datos));
+}
+
+function chartLabels(dates) {
+  return dates.data.map((item) => get_dates(item.datos));
+}
+
+function dynamicBackgroundColors(data) {
+  console.log(data.data);
+}
+
 function chartFuncBar(data) {
-  currency = data.data.map((item) => get_currency_values(item.datos));
-  labels = data.data.map((item) => get_dates(item.datos));
+  dynamicBackgroundColors(data);
   return new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: labels[0],
+      labels: chartLabels(data)[0],
       datasets: [
         {
           label: 'Valor en Pesos',
-          data: currency[0],
+          data: chartData(data)[0],
           backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)',
-          ],
-          borderColor: [
             'rgba(255, 99, 132, 1)',
             'rgba(54, 162, 235, 1)',
             'rgba(255, 206, 86, 1)',
@@ -113,25 +118,15 @@ function chartFuncBar(data) {
 }
 
 function chartFuncBarT(data) {
-  currency = data.data.map((item) => get_currency_values(item.datos));
-  labels = data.data.map((item) => get_dates(item.datos));
   return new Chart(ctx2, {
     type: 'bar',
     data: {
-      labels: labels[1],
+      labels: chartLabels(data)[1],
       datasets: [
         {
           label: 'Valor en Pesos',
-          data: currency[1],
+          data: chartData(data)[1],
           backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)',
-          ],
-          borderColor: [
             'rgba(255, 99, 132, 1)',
             'rgba(54, 162, 235, 1)',
             'rgba(255, 206, 86, 1)',
@@ -166,19 +161,22 @@ function renderTemplate(params) {
   return `
       <div class="col-sm-6">  
         <div class="card bg-light border-light shadow mb-3">
-          <div class="card-header">
+          <h5 class="card-header">
             ${
               params.idSerie === 'SP68257'
                 ? 'Unidades de Inversión'
                 : 'Tipo de Cambio'
             }
-          </div>
+          </h5>
           <div class="card-body">
-            <div class="card-title">
-              Promedio ${currencyFormat(average(valuesArray(params)))},
-              Máximo ${currencyFormat(max(valuesArray(params)))},
-              Mínimo ${currencyFormat(min(valuesArray(params)))}
-            </div>
+            <h5 class="card-title text-center">
+              Promedio: ${currencyFormat(average(valuesArray(params)))}
+              <br/>
+              Valor máximo: ${currencyFormat(max(valuesArray(params)))}
+              <br/>
+              Valor mínimo: ${currencyFormat(min(valuesArray(params)))}
+              <br/>
+            </h5>
             <p class="card-text"></p>
             ${series(params.datos)}
           </div>    
@@ -190,7 +188,7 @@ function renderTemplate(params) {
 function render(data) {
   if (data.status_code === 200) {
     return (document.getElementById('root').innerHTML = `
-      <div class="row">
+      <div class="row text-center">
         ${data.data.map(renderTemplate).join('')}
       </div>
     `);

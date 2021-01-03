@@ -1,19 +1,28 @@
 <!-- home.html -->
-{% extends "base.html" %} {% block content %}
-{% load static %}
+{% extends "base.html" %} {% block content %} {% load static %}
 <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
 <form class="form-inline" id="q_udis_dollar">
   <div class="form-group mx-sm-3 mb-2">
-    <input class="form-control" name="start_date" id="start_datepicker" placeholder="Fecha Inicial" autocomplete="off"
-      required />
+    <input
+      class="form-control"
+      name="start_date"
+      id="start_datepicker"
+      placeholder="Fecha Inicial"
+      autocomplete="off"
+      required
+    />
   </div>
   <div class="form-group mx-sm-3 mb-2">
-    <input class="form-control" name="end_date" id="end_datepicker" placeholder="Fecha Final" autocomplete="off"
-      required />
+    <input
+      class="form-control"
+      name="end_date"
+      id="end_datepicker"
+      placeholder="Fecha Final"
+      autocomplete="off"
+      required
+    />
   </div>
-  <button type="submit" class="btn btn-success mx-sm-3 mb-2">
-    Consultar
-  </button>
+  <button type="submit" class="btn btn-success mx-sm-3 mb-2">Consultar</button>
 </form>
 
 <div id="root"></div>
@@ -26,8 +35,6 @@
     <canvas id="currencyChart2" width="100" height="85"></canvas>
   </div>
 </div>
-
-
 
 <script>
   let ctx = document.getElementById('currencyChart');
@@ -73,11 +80,12 @@
     fetch('query_udis_dollar', query_data)
       .then((response) => response.json())
       .then((data) => {
-        render(data)
-        chartFuncBar(data)
-        chartFuncBarT(data)
+        render(data);
+        chartFuncBar(data);
+        chartFuncBarT(data);
       })
       .catch((error) => alert('Error al consultar, intente con otras fechas.'));
   });
 </script>
+
 {% endblock content %}
